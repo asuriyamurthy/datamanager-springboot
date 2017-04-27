@@ -2,6 +2,7 @@ package com.amaresh.projects.datamanager.dao;
 
 import java.util.List;
 
+import com.amaresh.projects.datamanager.model.BankAccount;
 import com.amaresh.projects.datamanager.model.Category;
 import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
@@ -27,5 +28,9 @@ public interface DataManagerDAO {
 	public abstract List<Expenses> getRecentExpenses();
 
 	public abstract Outstanding getOutstandingAmount();
+
+	public abstract BankAccount getBankBalance(String bankid);
+
+	public abstract BankAccount getWithdraw_balance(String bankid);
 
 }

@@ -16,6 +16,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import com.amaresh.projects.datamanager.model.BankAccount;
 import com.amaresh.projects.datamanager.model.Category;
 import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
@@ -182,7 +183,23 @@ public class DataManagerDAOImpl implements DataManagerDAO {
 	@Override
 	public Outstanding getOutstandingAmount() {
 		Outstanding outstanding = new Outstanding();
-		outstanding.setOutstanding_amount_str(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(amount),0) as amount FROM datamanager.tbl_outstanding where cleared_YN=?", new Object[] {"N"},Double.class),2)));
+		outstanding.setOutstanding_amount_str(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(amount),0) as amount FROM tbl_outstanding where cleared_YN=?", new Object[] {"N"},Double.class),2)));
 		return outstanding;
+	}
+
+	@Override
+	public BankAccount getBankBalance(String bankid) {
+		BankAccount bankaccount = new BankAccount();
+		bankaccount.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(balance),0) as amount FROM bank_account where id=?", new Object[] {bankid},Double.class),2)));
+		return bankaccount;
+		
+	}
+
+	@Override
+	public BankAccount getWithdraw_balance(String bankid) {
+		BankAccount bank_account = new BankAccount();
+		bank_account.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT (SELECT (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_INCOME) - (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_EXPENSE) AS BALANCE) - (SELECT IFNULL(SUM(BALANCE),0)  FROM BANK_ACCOUNT WHERE ID=?) AS BALANCE",new Object[] {bankid}, Double.class), 2)));
+		return bank_account;
+		
 	}
 }

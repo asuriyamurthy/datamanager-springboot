@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.amaresh.projects.datamanager.service.DataManagerService;
@@ -39,4 +40,16 @@ public class DashboardController {
 	public ResponseEntity<Object> outstanding_amount() {
 		return new ResponseEntity<>(datamanagerService.getOutstandingAmount(), HttpStatus.OK);
 	}	
+	
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/bank-balance", method = RequestMethod.GET)
+	public ResponseEntity<Object> bank_balance(@RequestParam(value = "bankid", required = true) String bankid) {
+		return new ResponseEntity<>(datamanagerService.getBankBalance(bankid), HttpStatus.OK);
+	}
+	
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/withdraw-balance", method = RequestMethod.GET)
+	public ResponseEntity<Object> withdraw_balance(@RequestParam(value = "bankid", required = true) String bankid) {
+		return new ResponseEntity<>(datamanagerService.getWithdraw_balance(bankid), HttpStatus.OK);
+	}
 }

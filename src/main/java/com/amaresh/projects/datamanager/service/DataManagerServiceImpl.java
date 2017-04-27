@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.amaresh.projects.datamanager.dao.DataManagerDAO;
+import com.amaresh.projects.datamanager.model.BankAccount;
 import com.amaresh.projects.datamanager.model.Category;
 import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
@@ -63,6 +64,16 @@ public class DataManagerServiceImpl implements DataManagerService {
 	@Override
 	public Outstanding getOutstandingAmount() {
 		return datamanagerDao.getOutstandingAmount();
+	}
+
+	@Override
+	public BankAccount getBankBalance(String bankid) {
+		return datamanagerDao.getBankBalance(bankid);
+	}
+
+	@Override
+	public BankAccount getWithdraw_balance(String bankid) {
+		return datamanagerDao.getWithdraw_balance(bankid);
 	}
 
 }
