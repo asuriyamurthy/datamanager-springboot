@@ -12,6 +12,7 @@ import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
 import com.amaresh.projects.datamanager.model.Income;
 import com.amaresh.projects.datamanager.model.Outstanding;
+import com.amaresh.projects.datamanager.model.Statements;
 
 @Service
 public class DataManagerServiceImpl implements DataManagerService {
@@ -74,6 +75,11 @@ public class DataManagerServiceImpl implements DataManagerService {
 	@Override
 	public BankAccount getWithdraw_balance(String bankid) {
 		return datamanagerDao.getWithdraw_balance(bankid);
+	}
+
+	@Override
+	public List<Statements> getRecentActivities() {
+		return datamanagerDao.getRecentActivities();
 	}
 
 }

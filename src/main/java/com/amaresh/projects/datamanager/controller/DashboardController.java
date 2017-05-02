@@ -52,4 +52,10 @@ public class DashboardController {
 	public ResponseEntity<Object> withdraw_balance(@RequestParam(value = "bankid", required = true) String bankid) {
 		return new ResponseEntity<>(datamanagerService.getWithdraw_balance(bankid), HttpStatus.OK);
 	}
+	
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/recent-activities", method = RequestMethod.GET)
+	public ResponseEntity<Object> recent_activities() {
+		return new ResponseEntity<>(datamanagerService.getRecentActivities(), HttpStatus.OK);
+	}
 }

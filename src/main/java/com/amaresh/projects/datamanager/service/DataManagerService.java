@@ -8,6 +8,7 @@ import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
 import com.amaresh.projects.datamanager.model.Income;
 import com.amaresh.projects.datamanager.model.Outstanding;
+import com.amaresh.projects.datamanager.model.Statements;
 
 public interface DataManagerService {
 
@@ -32,4 +33,6 @@ public interface DataManagerService {
 	public abstract BankAccount getBankBalance(String bankid);
 
 	public abstract BankAccount getWithdraw_balance(String bankid);
+
+	public abstract List<Statements> getRecentActivities();
 }

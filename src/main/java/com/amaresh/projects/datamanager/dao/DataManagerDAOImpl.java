@@ -22,6 +22,7 @@ import com.amaresh.projects.datamanager.model.DataManager;
 import com.amaresh.projects.datamanager.model.Expenses;
 import com.amaresh.projects.datamanager.model.Income;
 import com.amaresh.projects.datamanager.model.Outstanding;
+import com.amaresh.projects.datamanager.model.Statements;
 import com.amaresh.projects.datamanager.utils.Utilities;
 
 @Repository
@@ -123,13 +124,13 @@ public class DataManagerDAOImpl implements DataManagerDAO {
       String sqlQuery = "SELECT (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_INCOME) AS TOTALINCOME, (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_EXPENSE) AS TOTALEXPENSES,(SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_INCOME) - (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_EXPENSE) AS BALANCE";
       jdbcTemplate.query(sqlQuery, (RowCallbackHandler) rs -> {
           if (rs.getString("TOTALINCOME") != null) {
-        	  datamanager.setTotal_credit(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("TOTALINCOME"),2)));
+        	  datamanager.setTotal_credit(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("TOTALINCOME"),3)));
           }
           if (rs.getString("TOTALEXPENSES") != null) {
-        	  datamanager.setTotal_expenses(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("TOTALEXPENSES"),2)));
+        	  datamanager.setTotal_expenses(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("TOTALEXPENSES"),3)));
           }
           if (rs.getString("BALANCE") != null) {
-        	  datamanager.setBalance(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("BALANCE"),2)));
+        	  datamanager.setBalance(utilities.getValueFormatter(utilities.truncateDecimal(rs.getDouble("BALANCE"),3)));
           }
       });
 		return datamanager;
@@ -146,14 +147,14 @@ public class DataManagerDAOImpl implements DataManagerDAO {
 		 rows = jdbcTemplate.queryForList(sql);
 		 rows.stream().map((row) -> {
 			 	Expenses expenses = new Expenses();
-				expenses.setY((Double) row.get("AMOUNT"));
+				expenses.setY(utilities.truncateDecimal((double) row.get("AMOUNT"),3).doubleValue());
 				expenses.setName((String) row.get("CATEGORY_NAME"));
 				return expenses;
 			}).forEach((ss) -> {
 				if(expensesListByCategory.size()<5) {
 					expensesListByCategory.add(ss);
 				}else {
-					expensesOthers.setY(expensesOthers.getY()+ss.getY());
+					expensesOthers.setY(utilities.truncateDecimal((double) expensesOthers.getY()+ss.getY(),3).doubleValue());
 				}
 			});
 		 
@@ -172,7 +173,7 @@ public class DataManagerDAOImpl implements DataManagerDAO {
 		 rows.stream().map((row) -> {
 			 	Expenses expenses = new Expenses();
 				expenses.setName((String) row.get("expensedate"));
-				expenses.setY((double) row.get("amount"));
+				expenses.setY(utilities.truncateDecimal((double) row.get("AMOUNT"),3).doubleValue());
 				return expenses;
 			}).forEach((ss) -> {
 				recentExpenseslist.add(ss);
@@ -183,14 +184,14 @@ public class DataManagerDAOImpl implements DataManagerDAO {
 	@Override
 	public Outstanding getOutstandingAmount() {
 		Outstanding outstanding = new Outstanding();
-		outstanding.setOutstanding_amount_str(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(amount),0) as amount FROM tbl_outstanding where cleared_YN=?", new Object[] {"N"},Double.class),2)));
+		outstanding.setOutstanding_amount_str(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(amount),0) as amount FROM tbl_outstanding where cleared_YN=?", new Object[] {"N"},Double.class),3)));
 		return outstanding;
 	}
 
 	@Override
 	public BankAccount getBankBalance(String bankid) {
 		BankAccount bankaccount = new BankAccount();
-		bankaccount.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(balance),0) as amount FROM bank_account where id=?", new Object[] {bankid},Double.class),2)));
+		bankaccount.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT ifnull(SUM(balance),0) as amount FROM bank_account where id=?", new Object[] {bankid},Double.class),3)));
 		return bankaccount;
 		
 	}
@@ -198,8 +199,27 @@ public class DataManagerDAOImpl implements DataManagerDAO {
 	@Override
 	public BankAccount getWithdraw_balance(String bankid) {
 		BankAccount bank_account = new BankAccount();
-		bank_account.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT (SELECT (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_INCOME) - (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_EXPENSE) AS BALANCE) - (SELECT IFNULL(SUM(BALANCE),0)  FROM BANK_ACCOUNT WHERE ID=?) AS BALANCE",new Object[] {bankid}, Double.class), 2)));
+		bank_account.setAmountstr(utilities.getValueFormatter(utilities.truncateDecimal(jdbcTemplate.queryForObject("SELECT (SELECT (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_INCOME) - (SELECT IFNULL(SUM(AMOUNT),0) FROM TBL_EXPENSE) AS BALANCE) - (SELECT IFNULL(SUM(BALANCE),0)  FROM BANK_ACCOUNT WHERE ID=?) AS BALANCE",new Object[] {bankid}, Double.class), 3)));
 		return bank_account;
 		
+	}
+
+	@Override
+	public List<Statements> getRecentActivities() {
+		List<Statements> recentActivitesList = new ArrayList<>();
+		Collection<Map<String, Object>> rows = null;
+		String sql = "SELECT AMOUNT_TYPE,DESCRIPTION,AMOUNT,DATE_FORMAT(from_unixtime(DATETIME), \"%Y-%m-%d\") AS DATETIME FROM TBL_STATEMENT ORDER BY DATETIME DESC LIMIT 5";
+		 rows = jdbcTemplate.queryForList(sql);
+		 rows.stream().map((row) -> {
+			 	Statements statements = new Statements();
+			 	statements.setAmount(utilities.getValueFormatter(utilities.truncateDecimal((Double) row.get("AMOUNT"),3)));
+			 	statements.setType((String) row.get("AMOUNT_TYPE"));
+			 	statements.setDescription((String) row.get("DESCRIPTION"));
+			 	statements.setDate((String) row.get("DATETIME"));
+				return statements;
+			}).forEach((ss) -> {
+				recentActivitesList.add(ss);
+			});
+		return recentActivitesList;
 	}
 }
